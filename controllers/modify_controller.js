@@ -1,15 +1,19 @@
 const toRegister = require("../models/register_model");
 const Check = require("../service/member_check");
+const encryption = require("../models/encryption");
 
 const check = new Check();
 
 module.exports = class Member {
 	postRegister(req, res, next) {
+		// 進行加密
+		const password = encryption(req.body.password);
+
 		// 獲取client端資料
 		const memberData = {
 			name: req.body.name,
 			email: req.body.email,
-			password: req.body.password,
+			password: password,
 			create_date: onTime()
 		};
 
@@ -17,10 +21,8 @@ module.exports = class Member {
 		// 不符合email格式
 		if (checkEmail === false) {
 			res.json({
-				result: {
-					status: "註冊失敗。",
-					err: "請輸入正確的Eamil格式。(如1234@email.com)"
-				}
+				status: "註冊失敗。",
+				err: "請輸入正確的Eamil格式。(如1234@email.com)"
 			});
 			// 若符合email格式
 		} else if (checkEmail === true) {
