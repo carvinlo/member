@@ -2,7 +2,8 @@ const toRegister = require("../models/register_model");
 const loginAction = require("../models/login_model");
 const Check = require("../service/member_check");
 const encryption = require("../models/encryption");
-
+const jwt = require("jsonwebtoken");
+const config = require("../config/development_config");
 const check = new Check();
 
 module.exports = class Member {
@@ -65,6 +66,16 @@ module.exports = class Member {
 					}
 				});
 			} else if (check.checkNull(rows) === false) {
+				// 產生token
+				const token = jwt.sign(
+					{
+						algorithm: "HS256",
+						exp: Math.floor(Date.now() / 1000) + 5, // token 5分钟後過期。
+						data: rows[0].id
+					},
+					config.secret
+				);
+				res.setHeader("token", token);
 				res.json({
 					result: {
 						status: "登入成功。",
