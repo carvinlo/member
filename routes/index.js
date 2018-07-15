@@ -3,11 +3,13 @@ var router = express.Router();
 
 /* GET home page. */
 router.post("/", function(req, res, next) {
-  res.render("index", { title: "Express" });
+	res.render("index", { title: "Express" });
 });
 
 const MemberModifyMethod = require("../controllers/modify_controller");
 const memberModifyMethod = new MemberModifyMethod();
 router.post("/register", memberModifyMethod.postRegister);
+
+router.post("/login", memberModifyMethod.postLogin);
 
 module.exports = router;
