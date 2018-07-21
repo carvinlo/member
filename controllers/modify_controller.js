@@ -2,6 +2,7 @@ const toRegister = require("../models/register_model");
 const loginAction = require("../models/login_model");
 const Check = require("../service/member_check");
 const encryption = require("../models/encryption");
+const verify = require("../models/verification");
 const jwt = require("jsonwebtoken");
 const config = require("../config/development_config");
 const check = new Check();
@@ -70,7 +71,7 @@ module.exports = class Member {
 				const token = jwt.sign(
 					{
 						algorithm: "HS256",
-						exp: Math.floor(Date.now() / 1000) + 5, // token 5分钟後過期。
+						exp: Math.floor(Date.now() / 1000) + 30, // token 30秒後過期。
 						data: rows[0].id
 					},
 					config.secret
@@ -84,6 +85,30 @@ module.exports = class Member {
 				});
 			}
 		});
+	}
+	putUpdate(req, res, next) {
+		const token = req.headers["token"];
+		//確定token是否有輸入
+		if (check.checkNull(token) === true) {
+			res.json({
+				err: "請輸入token！"
+			});
+		} else if (check.checkNull(token) === false) {
+			verify(token).then(tokenResult => {
+				if (tokenResult === false) {
+					res.json({
+						result: {
+							status: "token錯誤。",
+							err: "請重新登入。"
+						}
+					});
+				} else {
+					res.json({
+						test: "token正確"
+					});
+				}
+			});
+		}
 	}
 };
 
