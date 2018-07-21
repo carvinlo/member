@@ -3,6 +3,7 @@ const loginAction = require("../models/login_model");
 const Check = require("../service/member_check");
 const encryption = require("../models/encryption");
 const verify = require("../models/verification");
+const updateAction = require("../models/update_model");
 const jwt = require("jsonwebtoken");
 const config = require("../config/development_config");
 const check = new Check();
@@ -103,9 +104,38 @@ module.exports = class Member {
 						}
 					});
 				} else {
-					res.json({
-						test: "token正確"
-					});
+					const id = tokenResult;
+
+					if (!req.body.password || !req.body.name) {
+						res.json({
+							result: {
+								status: "获取password 或 name错误。",
+								err: "请输入password 与 name。"
+							}
+						});
+						return;
+					}
+
+					// 進行加密
+					const password = encryption(req.body.password);
+
+					const memberUpdateData = {
+						name: req.body.name,
+						password: password,
+						update_date: onTime()
+					};
+					updateAction(id, memberUpdateData).then(
+						result => {
+							res.json({
+								result: result
+							});
+						},
+						err => {
+							res.json({
+								result: err
+							});
+						}
+					);
 				}
 			});
 		}
